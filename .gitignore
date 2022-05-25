@@ -1,0 +1,14 @@
+**/.idea
+**/.DS_Store
+**/node_modules
+.vscode/
+*.code-workspace
+**/_server.log
+**/uploads
+_nodemon.log
+nginx_caches/
+**/dist
+/hw3095/results.json
+/hw4095/data/
+/autocompressor-hw5693/gzip-place/
+/hw4095/uploaded/
