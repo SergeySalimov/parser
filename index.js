@@ -8,7 +8,6 @@ let interfacePath;
 let interfaceName;
 
 if (process.argv.length < 4) {
-  // pathToJson = path.join(__dirname, 'test.json');
   console.log('Example: node index.js test/test.json target/text-field.interface.ts TextField');
   process.exit()
 } else {
@@ -88,7 +87,3 @@ async function start() {
 }
 
 start();
-
-
-
-
