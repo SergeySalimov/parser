@@ -1,29 +1,27 @@
 const path = require('path');
 const fs = require('fs');
-const util = require('util');
 const os = require('os');
 
-const openFile = util.promisify(fs.open);
-const writeFile = util.promisify(fs.write);
-const closeFile = util.promisify(fs.close);
+const indent = '  ';
+let jsonPath;
+let interfacePath;
+let interfaceName;
 
-let pathToJson;
-let interfacePath = path.join(__dirname, 'interface.ts');
-
-if (process.argv.length <= 2) {
-  pathToJson = path.join(__dirname, 'test.json');
+if (process.argv.length < 4) {
+  // pathToJson = path.join(__dirname, 'test.json');
+  console.log('Example: node index.js test/test.json target/text-field.interface.ts TextField');
+  process.exit()
 } else {
-  console.log(process.argv[0]);
-  console.log(process.argv[1]);
-  console.log(process.argv[2]);
-  console.log(process.argv[3]);
+  jsonPath = path.normalize(process.argv[2]); // first argument path to JSON file
+  interfacePath = path.normalize(process.argv[3]); // second argument path to target interface
+  interfaceName = process.argv[4] || 'TextField'; // third optional, name for interface
 }
 
 function getJson(path) {
   let jsonObj;
   
   try {
-    const json = fs.readFileSync(pathToJson, 'utf-8');
+    const json = fs.readFileSync(jsonPath, 'utf-8');
     jsonObj = JSON.parse(json);
   } catch (e) {
     console.log('Error reading JSON file');
@@ -41,40 +39,52 @@ function isEmptyObject(obj) {
   return Object.keys(obj).length === 0;
 }
 
-function createInterfaceLine(data, indent) {
-
+function createInterfaceLines(data, indent) {
+  let interfaceBody = '';
+  for (const [key, value] of Object.entries(data)) {
+    if (isObject(value)) {
+      const newIndent = indent + indent;
+      interfaceBody += `${indent}${key}: {${os.EOL}`;
+      interfaceBody +=  createInterfaceLines(value, newIndent);
+      interfaceBody += `${indent}};${os.EOL}`;
+    } else {
+      interfaceBody += `${indent}${key}: ${typeof key};${os.EOL}`;
+    }
+  }
+  return interfaceBody;
 }
 
-function createInterface(data) {
+function createInterface(data, name) {
   if (!isObject(data) || isEmptyObject(data)) {
     console.log('Object is not valid!');
     process.exit();
   }
   
-  console.log(data);
-  let interface = 'export interface TextField {' + os.EOL;
+  let interfaceBody;
+  interfaceBody = `export interface ${name} {${os.EOL}`;
+  interfaceBody += createInterfaceLines(data, indent);
+  interfaceBody += `}${os.EOL}`;
   
-  for (const [key, value] of Object.entries(data)) {
-    
-    // console.log('--------------');
-    // console.log(key);
-    // console.log(value);
-    // console.log('is value object: ', isObject(value));
+  return interfaceBody;
+}
+
+function saveData(data, path) {
+  try {
+    const file = fs.openSync(path, 'w+');
+    fs.writeFileSync(file, data);
+    fs.closeSync(file);
+  } catch (e) {
+    console.log('Error saving interface');
+    process.exit();
   }
-  
-  interface += '}' + os.EOL;
-  
-  return interface;
 }
 
 async function start() {
-  console.log('=============================');
+  const jsonObj = getJson(jsonPath);
+  const interface = createInterface(jsonObj, interfaceName);
   
-  const jsonObj = getJson(pathToJson);
-  const interface = createInterface(jsonObj);
-  
-  console.log('=============================');
-  console.log(interface);
+  saveData(interface, interfacePath);
+  console.log('Interface was created');
 }
 
 start();

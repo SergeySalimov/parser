@@ -4,7 +4,8 @@
   "description": "parser for json",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js test/test.json target/text-field.interface.ts TextField"
   },
   "author": "ssalimau",
   "license": "ISC"
