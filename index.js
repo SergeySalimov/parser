@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const indent = '  ';
+const INDENT = '  ';
 let jsonPath;
 let interfacePath;
 let interfaceName;
@@ -42,12 +42,12 @@ function createInterfaceLines(data, indent) {
   let interfaceBody = '';
   for (const [key, value] of Object.entries(data)) {
     if (isObject(value)) {
-      const newIndent = indent + indent;
+      const newIndent = indent + INDENT;
       interfaceBody += `${indent}${key}: {${os.EOL}`;
       interfaceBody +=  createInterfaceLines(value, newIndent);
       interfaceBody += `${indent}};${os.EOL}`;
     } else {
-      interfaceBody += `${indent}${key}: ${typeof key};${os.EOL}`;
+      interfaceBody += `${indent}${key}: ${typeof value};${os.EOL}`;
     }
   }
   return interfaceBody;
@@ -61,7 +61,7 @@ function createInterface(data, name) {
   
   let interfaceBody;
   interfaceBody = `export interface ${name} {${os.EOL}`;
-  interfaceBody += createInterfaceLines(data, indent);
+  interfaceBody += createInterfaceLines(data, INDENT);
   interfaceBody += `}${os.EOL}`;
   
   return interfaceBody;
